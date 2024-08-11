@@ -1,0 +1,9 @@
+services:
+  connect4:
+    image: automationmusician/connect4:latest
+    build: ../connect-4-ai-801/
+    ports:
+      - "8080:3000"
+    environment:
+      BASE_PATH: "/connect4"
+      MAX_DEPTH: 6
