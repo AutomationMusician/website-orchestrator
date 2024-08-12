@@ -1,9 +1,20 @@
 services:
+  traefik:
+    image: traefik:3.1
+    command: --api.insecure=true --providers.docker
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
   connect4:
     image: automationmusician/connect4:latest
     build: ../connect-4-ai-801/
-    ports:
-      - "8080:3000"
     environment:
       BASE_PATH: "/connect4"
       MAX_DEPTH: 6
+    labels:
+      - "traefik.http.routers.connect4.rule=PathPrefix(`/connect4`)"
+    depends_on:
+      - traefik
