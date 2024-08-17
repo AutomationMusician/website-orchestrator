@@ -6,6 +6,7 @@ services:
     ports:
       - "80:80"
       - "8080:8080"
+    restart: unless-stopped
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
@@ -17,5 +18,6 @@ services:
       MAX_DEPTH: 6
     labels:
       - "traefik.http.routers.connect4.rule=PathPrefix(`/connect4`)"
+    restart: unless-stopped
     depends_on:
       - traefik
