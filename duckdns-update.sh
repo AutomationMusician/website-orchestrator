@@ -2,8 +2,8 @@
 
 # Run this script using cron:
 # 1. open cron using the command `crontab -e`
-# 2. Add the following line to the file: 
-#    0 * * * * <absolute-path-to>/duckdns-update.sh
+# 2. Add the following line to the file to run it every hour (at the 55 minute mark): 
+#    55 * * * * <absolute-path-to>/duckdns-update.sh
 
 SCRIPT_DIR=$(realpath $(dirname $0))
 echo $SCRIPT_DIR
