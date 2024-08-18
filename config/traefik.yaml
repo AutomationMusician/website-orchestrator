@@ -1,0 +1,26 @@
+providers: 
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+
+# log:
+#   level: DEBUG
+
+api:
+  insecure: true
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+certificatesResolvers:
+  defaultCertResolver:
+    acme:
+      email: josh.a.fishman@gmail.com
+      storage: /data/acme.json
+      httpChallenge:
+        entryPoint: web
+      # For testing with the lets encrypt's staging (non-production) server
+      # to avoid rate limiting issues
+      # caServer: https://acme-staging-v02.api.letsencrypt.org/directory
