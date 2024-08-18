@@ -2,22 +2,33 @@ services:
 
   traefik:
     image: traefik:3.1
-    command: --api.insecure=true --providers.docker
+    container_name: traefik
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
     restart: unless-stopped
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./config/traefik.yaml:/etc/traefik/traefik.yaml"
+    labels:
+      - traefik.http.routers.connect4.rule=Host(`joshuafishman.duckdns.org`)
+      - traefik.http.routers.connect4.entrypoints=web
+      - traefik.http.routers.connect4.tls.certresolver=defaultCertResolver
 
   connect4:
     image: automationmusician/connect4:latest
     build: ../connect-4-ai-801/
+    container_name: connect4
     environment:
       BASE_PATH: "/connect4"
       MAX_DEPTH: 6
     labels:
-      - "traefik.http.routers.connect4.rule=PathPrefix(`/connect4`)"
+      - traefik.http.routers.connect4.rule=Host(`joshuafishman.duckdns.org`) && PathPrefix(`/connect4`)
+      # - traefik.http.routers.connect4.rule=Host(`joshuafishman.duckdns.org`)
+      - traefik.http.routers.connect4.entrypoints=websecure
+      - traefik.http.routers.connect4.tls=true
+      - traefik.http.routers.connect4.tls.certresolver=defaultCertResolver
     restart: unless-stopped
     depends_on:
       - traefik
