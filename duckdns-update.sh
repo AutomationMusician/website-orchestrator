@@ -17,6 +17,6 @@ mkdir -p ${LOGS_DIR}
 touch $OUTPUT_FILE
 {
     date '+%H:%M:%S' && \
-    curl "https://www.duckdns.org/update?domains=${DUCKDNS_DOMAINS}&token=${DUCKDNS_TOKEN}&verbose=true"
+    curl "https://www.duckdns.org/update?domains=${DUCKDNS_DOMAINS}&txt=${DUCKDNS_TXT_RECORD}&token=${DUCKDNS_TOKEN}&verbose=true"
 } | tr '\n' ',' | tee -a $OUTPUT_FILE
 echo "" | tee -a $OUTPUT_FILE
