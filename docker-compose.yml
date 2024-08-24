@@ -11,10 +11,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./config/traefik.yaml:/etc/traefik/traefik.yaml"
-    labels:
-      - traefik.http.routers.connect4.rule=Host(`joshuafishman.duckdns.org`)
-      - traefik.http.routers.connect4.entrypoints=web
-      - traefik.http.routers.connect4.tls.certresolver=defaultCertResolver
+      - "./data/traefik:/data/"
 
   connect4:
     image: automationmusician/connect4:latest
@@ -25,7 +22,6 @@ services:
       MAX_DEPTH: 6
     labels:
       - traefik.http.routers.connect4.rule=Host(`joshuafishman.duckdns.org`) && PathPrefix(`/connect4`)
-      # - traefik.http.routers.connect4.rule=Host(`joshuafishman.duckdns.org`)
       - traefik.http.routers.connect4.entrypoints=websecure
       - traefik.http.routers.connect4.tls=true
       - traefik.http.routers.connect4.tls.certresolver=defaultCertResolver
