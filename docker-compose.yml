@@ -13,6 +13,19 @@ services:
       - "./config/traefik.yaml:/etc/traefik/traefik.yaml"
       - "./data/traefik:/data/"
 
+  personal-site:
+    image: automationmusician/personal-site:latest
+    build: ../personal-site/
+    container_name: personal-site
+    labels:
+      - traefik.http.routers.personal-site.rule=Host(`joshuafishman.duckdns.org`)
+      - traefik.http.routers.personal-site.entrypoints=websecure
+      - traefik.http.routers.personal-site.tls=true
+      - traefik.http.routers.personal-site.tls.certresolver=defaultCertResolver
+    restart: unless-stopped
+    depends_on:
+      - traefik
+
   connect4:
     image: automationmusician/connect4:latest
     build: ../connect-4-ai-801/
