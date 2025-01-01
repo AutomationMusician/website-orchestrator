@@ -1,0 +1,8 @@
+http:
+  routers:
+    personal-site:
+      service: personal-site-website-orchestrator@docker
+      rule: Host(`joshuafishman.duckdns.org`)
+      entrypoints: websecure
+      tls:
+        certresolver: defaultCertResolver
