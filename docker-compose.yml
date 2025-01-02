@@ -8,6 +8,9 @@ services:
       - "443:443"
       - "8080:8080"
     restart: unless-stopped
+    environment:
+      - ROOT_DOMAIN
+      - PUBLIC
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./config/traefik:/etc/traefik"
@@ -28,11 +31,6 @@ services:
     environment:
       BASE_PATH: "/connect4"
       MAX_DEPTH: 6
-    labels:
-      - traefik.http.routers.connect4.rule=Host(`joshuafishman.duckdns.org`) && PathPrefix(`/connect4`)
-      - traefik.http.routers.connect4.entrypoints=websecure
-      - traefik.http.routers.connect4.tls=true
-      - traefik.http.routers.connect4.tls.certresolver=defaultCertResolver
     restart: unless-stopped
     depends_on:
       - traefik

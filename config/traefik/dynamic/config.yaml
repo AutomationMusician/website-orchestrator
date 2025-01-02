@@ -2,7 +2,22 @@ http:
   routers:
     personal-site:
       service: personal-site-website-orchestrator@docker
-      rule: Host(`joshuafishman.duckdns.org`)
+      rule: Host(`{{ env "ROOT_DOMAIN" }}`)
       entrypoints: websecure
+      {{ if eq (env "PUBLIC") "true" }}
       tls:
         certresolver: defaultCertResolver
+      {{ else }}
+      tls: {}
+      {{ end }}
+    
+    connect4:
+      service: connect4-website-orchestrator@docker
+      rule: Host(`{{ env "ROOT_DOMAIN" }}`) && PathPrefix(`/connect4`)
+      entrypoints: websecure
+      {{ if eq (env "PUBLIC") "true" }}
+      tls:
+        certresolver: defaultCertResolver
+      {{ else }}
+      tls: {}
+      {{ end }}
