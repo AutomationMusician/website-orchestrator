@@ -15,14 +15,21 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./config/traefik:/etc/traefik"
       - "./data/traefik:/data/"
+    networks:
+      - personal-site-ingress
+      - connect4-ingress
+    profiles:
+      - infra
 
   personal-site:
     image: automationmusician/personal-site:latest
     build: ../personal-site/
     container_name: personal-site
     restart: unless-stopped
-    depends_on:
-      - traefik
+    networks:
+      - personal-site-ingress
+    profiles:
+      - app
 
   connect4:
     image: automationmusician/connect4:latest
@@ -32,9 +39,11 @@ services:
       BASE_PATH: "/connect4"
       MAX_DEPTH: 6
     restart: unless-stopped
-    depends_on:
-      - traefik
+    networks:
+      - connect4-ingress
+    profiles:
+      - app
 
 networks:
-  default:
-    name: website-orchestrator
+  personal-site-ingress: {}
+  connect4-ingress: {}
