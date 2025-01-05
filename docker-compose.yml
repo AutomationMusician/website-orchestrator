@@ -1,5 +1,5 @@
 services:
-
+  ################ infrastructure ###########################
   traefik:
     image: traefik:3.1
     container_name: traefik
@@ -20,7 +20,24 @@ services:
       - connect4-ingress
     profiles:
       - infra
+      - all
 
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    user: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - infra
+      - all
+
+  ####################### apps ################################
   personal-site:
     image: automationmusician/personal-site:latest
     build: ../personal-site/
@@ -30,6 +47,7 @@ services:
       - personal-site-ingress
     profiles:
       - app
+      - all
 
   connect4:
     image: automationmusician/connect4:latest
@@ -43,7 +61,35 @@ services:
       - connect4-ingress
     profiles:
       - app
+      - all
+
+  #### super bowl quiz ####
+  super_bowl_quiz_initialize_database:
+    image: postgres:16
+    user: postgres
+    depends_on: 
+      - postgres
+    entrypoint: "/mnt/initialize_database.sh"
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      SUPER_BOWL_QUIZ_PGPASSWORD: ${SUPER_BOWL_QUIZ_PGPASSWORD}
+    networks:
+      - super-bowl-quiz-backend
+    volumes:
+      - "../super-bowl-quiz/database_setup:/mnt"
+    profiles:
+      - app
+      - all
 
 networks:
-  personal-site-ingress: {}
-  connect4-ingress: {}
+  personal-site-ingress:
+    name: personal-site-ingress
+  connect4-ingress:
+    name: connect4-ingress
+  super-bowl-quiz-backend:
+    name: super-bowl-quiz-backend
+
+volumes:
+  pgdata:
+    name: pgdata
