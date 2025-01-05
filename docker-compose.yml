@@ -64,6 +64,44 @@ services:
       - all
 
   #### super bowl quiz ####
+  super_bowl_quiz_app:
+    build: ../super-bowl-quiz
+    image: automationmusician/superbowlquiz:latest
+    restart: unless-stopped
+    depends_on: 
+      - super_bowl_quiz_initialize_database
+    environment:
+      PGHOST: postgres
+      PGUSER: super_bowl_quiz
+      PGDATABASE: super_bowl_quiz
+      PGPORT: 5432
+      PGPASSWORD: ${SUPER_BOWL_QUIZ_PGPASSWORD}
+    ports: # TODO: get this running with traefik with a base path and remove this exposed port
+      - 3000:3000
+    volumes:
+      - "./config/super_bowl_quiz/:/usr/src/superbowlquiz/configs"
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - app
+      - all
+
+  super_bowl_quiz_admin_console:
+    build: ../super-bowl-quiz
+    image: automationmusician/superbowlquiz:latest
+    entrypoint: "npm run admin-console"
+    environment:
+      PGHOST: postgres
+      PGUSER: super_bowl_quiz
+      PGDATABASE: super_bowl_quiz
+      PGPORT: 5432
+      PGPASSWORD: ${SUPER_BOWL_QUIZ_PGPASSWORD}
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - app
+      - all
+
   super_bowl_quiz_initialize_database:
     image: postgres:16
     user: postgres
@@ -74,10 +112,10 @@ services:
       PGHOST: postgres
       PGPASSWORD: ${POSTGRES_PASSWORD}
       SUPER_BOWL_QUIZ_PGPASSWORD: ${SUPER_BOWL_QUIZ_PGPASSWORD}
-    networks:
-      - super-bowl-quiz-backend
     volumes:
       - "../super-bowl-quiz/database_setup:/mnt/scripts"
+    networks:
+      - super-bowl-quiz-backend
     profiles:
       - app
       - all
@@ -91,13 +129,13 @@ services:
     environment:
       PGHOST: postgres
       PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - "./data/postgres/dump/:/mnt/dump/"
     networks:
       - super-bowl-quiz-backend
     profiles:
       - app
       - all
-    volumes:
-      - "./data/postgres/dump/:/mnt/dump/"
 
   super_bowl_quiz_pg_load:
     image: postgres:16
@@ -108,14 +146,14 @@ services:
     environment:
       PGHOST: postgres
       PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - "./data/postgres/dump/:/mnt/dump/"
+      - "../super-bowl-quiz/database_setup:/mnt/scripts"
     networks:
       - super-bowl-quiz-backend
     profiles:
       - app
       - all
-    volumes:
-      - "./data/postgres/dump/:/mnt/dump/"
-      - "../super-bowl-quiz/database_setup:/mnt/scripts"
 
 networks:
   personal-site-ingress:
