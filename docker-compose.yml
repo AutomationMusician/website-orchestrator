@@ -69,7 +69,7 @@ services:
     user: postgres
     depends_on: 
       - postgres
-    entrypoint: "/mnt/initialize_database.sh"
+    entrypoint: "/mnt/scripts/initialize_database.sh"
     environment:
       PGHOST: postgres
       PGPASSWORD: ${POSTGRES_PASSWORD}
@@ -77,10 +77,45 @@ services:
     networks:
       - super-bowl-quiz-backend
     volumes:
-      - "../super-bowl-quiz/database_setup:/mnt"
+      - "../super-bowl-quiz/database_setup:/mnt/scripts"
     profiles:
       - app
       - all
+
+  super_bowl_quiz_pg_dump:
+    image: postgres:16
+    user: postgres
+    depends_on: 
+      - postgres
+    entrypoint: "/bin/bash -c 'pg_dump super_bowl_quiz > /mnt/dump/super_bowl_quiz.sql'"
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - app
+      - all
+    volumes:
+      - "./data/postgres/dump/:/mnt/dump/"
+
+  super_bowl_quiz_pg_load:
+    image: postgres:16
+    user: postgres
+    depends_on: 
+      - postgres
+    entrypoint: "/mnt/scripts/reload_database.sh"
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - app
+      - all
+    volumes:
+      - "./data/postgres/dump/:/mnt/dump/"
+      - "../super-bowl-quiz/database_setup:/mnt/scripts"
 
 networks:
   personal-site-ingress:
