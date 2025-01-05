@@ -21,3 +21,15 @@ http:
       {{ else }}
       tls: {}
       {{ end }}
+    
+    super_bowl_quiz:
+      service: super-bowl-quiz-website-orchestrator@docker
+      rule: Host(`{{ env "ROOT_DOMAIN" }}`) && PathPrefix(`/super-bowl-quiz`)
+      entrypoints: websecure
+      {{ if eq (env "PUBLIC") "true" }}
+      tls:
+        certresolver: defaultCertResolver
+      {{ else }}
+      tls: {}
+      {{ end }}
+

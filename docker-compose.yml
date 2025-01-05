@@ -16,8 +16,7 @@ services:
       - "./config/traefik:/etc/traefik"
       - "./data/traefik:/data/"
     networks:
-      - personal-site-ingress
-      - connect4-ingress
+      - traefik
     profiles:
       - infra
       - all
@@ -27,6 +26,7 @@ services:
     container_name: postgres
     user: postgres
     restart: unless-stopped
+    ports: [ "5432:5432" ] # Should only be enabled for development
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
@@ -44,7 +44,7 @@ services:
     container_name: personal-site
     restart: unless-stopped
     networks:
-      - personal-site-ingress
+      - traefik
     profiles:
       - app
       - all
@@ -58,15 +58,16 @@ services:
       MAX_DEPTH: 6
     restart: unless-stopped
     networks:
-      - connect4-ingress
+      - traefik
     profiles:
       - app
       - all
 
   #### super bowl quiz ####
-  super_bowl_quiz_app:
+  super_bowl_quiz:
     build: ../super-bowl-quiz
     image: automationmusician/superbowlquiz:latest
+    container_name: super_bowl_quiz
     restart: unless-stopped
     depends_on: 
       - super_bowl_quiz_initialize_database
@@ -81,6 +82,7 @@ services:
     volumes:
       - "./config/super_bowl_quiz/:/usr/src/superbowlquiz/configs"
     networks:
+      - traefik
       - super-bowl-quiz-backend
     profiles:
       - app
@@ -99,14 +101,11 @@ services:
     networks:
       - super-bowl-quiz-backend
     profiles:
-      - app
       - all
 
   super_bowl_quiz_initialize_database:
     image: postgres:16
     user: postgres
-    depends_on: 
-      - postgres
     entrypoint: "/mnt/scripts/initialize_database.sh"
     environment:
       PGHOST: postgres
@@ -123,8 +122,6 @@ services:
   super_bowl_quiz_pg_dump:
     image: postgres:16
     user: postgres
-    depends_on: 
-      - postgres
     entrypoint: "/bin/bash -c 'pg_dump super_bowl_quiz > /mnt/dump/super_bowl_quiz.sql'"
     environment:
       PGHOST: postgres
@@ -134,14 +131,11 @@ services:
     networks:
       - super-bowl-quiz-backend
     profiles:
-      - app
       - all
 
   super_bowl_quiz_pg_load:
     image: postgres:16
     user: postgres
-    depends_on: 
-      - postgres
     entrypoint: "/mnt/scripts/reload_database.sh"
     environment:
       PGHOST: postgres
@@ -152,14 +146,11 @@ services:
     networks:
       - super-bowl-quiz-backend
     profiles:
-      - app
       - all
 
 networks:
-  personal-site-ingress:
-    name: personal-site-ingress
-  connect4-ingress:
-    name: connect4-ingress
+  traefik:
+    name: traefik
   super-bowl-quiz-backend:
     name: super-bowl-quiz-backend
 
