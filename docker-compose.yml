@@ -26,7 +26,7 @@ services:
     container_name: postgres
     user: postgres
     restart: unless-stopped
-    ports: [ "5432:5432" ] # Should only be enabled for development
+    # ports: [ "5432:5432" ] # Should only be enabled for development
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
@@ -77,10 +77,8 @@ services:
       PGDATABASE: super_bowl_quiz
       PGPORT: 5432
       PGPASSWORD: ${SUPER_BOWL_QUIZ_PGPASSWORD}
-    ports: # TODO: get this running with traefik with a base path and remove this exposed port
-      - 3000:3000
     volumes:
-      - "./config/super_bowl_quiz/:/usr/src/superbowlquiz/configs"
+      - "./config/super_bowl_quiz/:/usr/src/superbowlquiz/config"
     networks:
       - traefik
       - super-bowl-quiz-backend
