@@ -1,5 +1,5 @@
 services:
-
+  ################ infrastructure ###########################
   traefik:
     image: traefik:3.1
     container_name: traefik
@@ -15,14 +15,39 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./config/traefik:/etc/traefik"
       - "./data/traefik:/data/"
+    networks:
+      - traefik
+    profiles:
+      - infra
+      - all
 
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    user: postgres
+    restart: unless-stopped
+    # ports: [ "5432:5432" ] # Should only be enabled for development
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - infra
+      - all
+
+  ####################### apps ################################
   personal-site:
     image: automationmusician/personal-site:latest
     build: ../personal-site/
     container_name: personal-site
     restart: unless-stopped
-    depends_on:
+    networks:
       - traefik
+    profiles:
+      - app
+      - all
 
   connect4:
     image: automationmusician/connect4:latest
@@ -32,9 +57,101 @@ services:
       BASE_PATH: "/connect4"
       MAX_DEPTH: 6
     restart: unless-stopped
-    depends_on:
+    networks:
       - traefik
+    profiles:
+      - app
+      - all
+
+  #### super bowl quiz ####
+  super_bowl_quiz:
+    build: ../super-bowl-quiz
+    image: automationmusician/superbowlquiz:latest
+    container_name: super_bowl_quiz
+    restart: unless-stopped
+    depends_on: 
+      - super_bowl_quiz_initialize_database
+    environment:
+      PGHOST: postgres
+      PGUSER: super_bowl_quiz
+      PGDATABASE: super_bowl_quiz
+      PGPORT: 5432
+      PGPASSWORD: ${SUPER_BOWL_QUIZ_PGPASSWORD}
+    volumes:
+      - "./config/super_bowl_quiz/:/usr/src/superbowlquiz/config"
+    networks:
+      - traefik
+      - super-bowl-quiz-backend
+    profiles:
+      - app
+      - all
+
+  super_bowl_quiz_admin_console:
+    build: ../super-bowl-quiz
+    image: automationmusician/superbowlquiz:latest
+    entrypoint: "npm run admin-console"
+    environment:
+      PGHOST: postgres
+      PGUSER: super_bowl_quiz
+      PGDATABASE: super_bowl_quiz
+      PGPORT: 5432
+      PGPASSWORD: ${SUPER_BOWL_QUIZ_PGPASSWORD}
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - all
+
+  super_bowl_quiz_initialize_database:
+    image: postgres:16
+    user: postgres
+    entrypoint: "/mnt/scripts/initialize_database.sh"
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      SUPER_BOWL_QUIZ_PGPASSWORD: ${SUPER_BOWL_QUIZ_PGPASSWORD}
+    volumes:
+      - "../super-bowl-quiz/database_setup:/mnt/scripts"
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - app
+      - all
+
+  super_bowl_quiz_pg_dump:
+    image: postgres:16
+    user: postgres
+    entrypoint: "/bin/bash -c 'pg_dump super_bowl_quiz > /mnt/dump/super_bowl_quiz.sql'"
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - "./data/postgres/dump/:/mnt/dump/"
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - all
+
+  super_bowl_quiz_pg_load:
+    image: postgres:16
+    user: postgres
+    entrypoint: "/mnt/scripts/reload_database.sh"
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - "./data/postgres/dump/:/mnt/dump/"
+      - "../super-bowl-quiz/database_setup:/mnt/scripts"
+    networks:
+      - super-bowl-quiz-backend
+    profiles:
+      - all
 
 networks:
-  default:
-    name: website-orchestrator
+  traefik:
+    name: traefik
+  super-bowl-quiz-backend:
+    name: super-bowl-quiz-backend
+
+volumes:
+  pgdata:
+    name: pgdata
