@@ -22,7 +22,7 @@ http:
       tls: {}
       {{ end }}
     
-    super_bowl_quiz:
+    super-bowl-quiz:
       service: super-bowl-quiz-website-orchestrator@docker
       rule: Host(`{{ env "ROOT_DOMAIN" }}`) && PathPrefix(`/super-bowl-quiz`)
       entrypoints: websecure
