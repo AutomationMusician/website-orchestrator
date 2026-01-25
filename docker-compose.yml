@@ -91,8 +91,7 @@ services:
   super-bowl-quiz-initialize-database:
     image: postgres:16
     user: postgres
-    # entrypoint: "/mnt/scripts/initialize_database.sh"
-    entrypoint: "sleep 1000"
+    entrypoint: "/mnt/scripts/initialize_database.sh"
     environment:
       PGHOST: postgres
       PGPASSWORD: ${POSTGRES_PASSWORD}
