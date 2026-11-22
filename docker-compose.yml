@@ -1,7 +1,7 @@
 services:
   ################ infrastructure ###########################
   traefik:
-    image: traefik:3.7
+    image: docker.io/library/traefik:3.7
     container_name: traefik
     ports:
       - "80:80"
@@ -20,7 +20,7 @@ services:
       - all
 
   postgres:
-    image: postgres:18
+    image: docker.io/library/postgres:18
     container_name: postgres
     user: postgres
     restart: unless-stopped
@@ -35,7 +35,7 @@ services:
 
   ####################### apps ################################
   personal-site:
-    image: automationmusician/personal-site:latest
+    image: personal-site:latest
     build: ../personal-site/
     container_name: personal-site
     restart: unless-stopped
@@ -44,7 +44,7 @@ services:
       - all
 
   connect4:
-    image: automationmusician/connect4:latest
+    image: connect4:latest
     build: ../connect-4-ai-801/
     container_name: connect4
     environment:
@@ -58,7 +58,7 @@ services:
   #### super bowl quiz ####
   super-bowl-quiz:
     build: ../super-bowl-quiz
-    image: automationmusician/superbowlquiz:latest
+    image: superbowlquiz:latest
     container_name: super-bowl-quiz
     restart: unless-stopped
     depends_on: 
@@ -77,7 +77,7 @@ services:
 
   super-bowl-quiz-admin-console:
     build: ../super-bowl-quiz
-    image: automationmusician/superbowlquiz:latest
+    image: superbowlquiz:latest
     entrypoint: "npm run admin-console"
     environment:
       PGHOST: postgres
@@ -89,7 +89,7 @@ services:
       - all
 
   super-bowl-quiz-initialize-database:
-    image: postgres:18
+    image: docker.io/library/postgres:18
     user: postgres
     entrypoint: "/mnt/scripts/initialize_database.sh"
     environment:
@@ -103,7 +103,7 @@ services:
       - all
 
   super-bowl-quiz-pg-dump:
-    image: postgres:18
+    image: docker.io/library/postgres:18
     user: postgres
     entrypoint: "/bin/bash -c 'pg_dump super_bowl_quiz > /mnt/dump/super_bowl_quiz.sql'"
     environment:
@@ -115,7 +115,7 @@ services:
       - all
 
   super-bowl-quiz-pg-load:
-    image: postgres:18
+    image: docker.io/library/postgres:18
     user: postgres
     entrypoint: "/mnt/scripts/reload_database.sh"
     environment:
